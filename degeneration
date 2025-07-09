@@ -1,0 +1,95 @@
+//This file contains the MAGMA code for finding degenerations of the very general JK 3-fold to a cubic 3-fold
+
+
+//v1: this is the one I've run so far.  It is fast enough to get through most examples, but does not 
+//tell you the explicit birational map
+i := 610;
+number := i;
+for weights in sporadic[i .. i] do
+success := false;
+number := number +1;
+T := Cputime();
+deg := &+weights-1;
+P := PolynomialRing(Rationals(),weights);
+mon := MonomialsOfWeightedDegree(P,deg);
+PP := WeightedProjectiveSpace(Rationals(),weights);
+OD := Divisor(PP,Exponents(mon[1])); //Weil divisor which is section of O(D)
+Q := RiemannRochPolytope(OD);
+points := [point: point in Points(Q)];
+r := #Points(Q);
+cubic := [[1,0,0,0],[2,1,0,0],[0,2,1,0],[0,0,2,1],[0,0,0,2]];
+C := Polytope(cubic);
+vol := Volume(C);
+for a in [1 .. r] do
+differences := [p - points[a]: p in points];
+for b in [a .. r] do
+for c in [b .. r] do
+for d in [c .. r] do
+for e in [d .. r] do
+if Determinant(Matrix([differences[b],differences[c],differences[d],differences[e]])) eq vol then
+pol := Polytope([points[a],points[b],points[c],points[d],points[e]]);
+if IsEquivalent(pol, C) eq true then
+irrational := "Irrational";
+print index,deg,weights,Rays(PP),mon[1],OD,Q,pol,"Irrational";
+success := true;
+break a;
+end if;
+end if;
+end for;
+end for;
+end for;
+end for;
+end for;
+print Cputime(T);
+if success eq false then
+print index,weights,deg,"Unknown";
+end if;
+end for;
+
+
+//v2: Here is another implementation using matrices which is more conceptually straightforward and probably more generally applicable.  Right now it is a bit slower.
+
+i := 610;
+number := i;
+for weights in sporadic[i .. i] do
+success := false;
+number := number +1;
+T := Cputime();
+deg := &+weights-1;
+P := PolynomialRing(Rationals(),weights);
+mon := MonomialsOfWeightedDegree(P,deg);
+PP := WeightedProjectiveSpace(Rationals(),weights);
+OD := Divisor(PP,Exponents(mon[1])); //Weil divisor which is section of O(D)
+Q := RiemannRochPolytope(OD);
+points := [point: point in Points(Q)];
+r := #Points(Q);
+cubic := [[1,0,0,0],[2,1,0,0],[0,2,1,0],[0,0,2,1],[0,0,0,2]];
+cubic_shift := [[1,1,0,0],[-1,2,1,0],[-1,0,2,1],[-1,0,0,2]];
+Cmat := Matrix(Rationals(),4,4,cubic_shift);
+Cinv := Cmat^(-1);
+for a in points do
+differences := [p - a: p in points];
+for b in differences do
+for c in differences do
+for d in differences do
+for e in differences do
+M := Matrix([b,c,d,e]);
+transform := M*Cinv;
+if Determinant(transform) eq 1 then
+    if Denominator(transform) eq 1 then
+	print index,deg,weights,Rays(PP),mon[1],OD,Q,a,a+b,a+c,a+d,a+e,transform,"Irrational";
+	success := true;
+	break a;
+    end if;
+end if;
+end for;
+end for;
+end for;
+end for;
+end for;
+if success eq false then
+print index,weights,deg,"Unknown";
+end if;
+print Cputime(T);
+end for;
+
