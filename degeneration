@@ -30,7 +30,7 @@ if Determinant(Matrix([differences[b],differences[c],differences[d],differences[
 pol := Polytope([points[a],points[b],points[c],points[d],points[e]]);
 if IsEquivalent(pol, C) eq true then
 irrational := "Irrational";
-print index,deg,weights,Rays(PP),mon[1],OD,Q,pol,"Irrational";
+print number,deg,weights,Rays(PP),mon[1],OD,Q,pol,"Irrational";
 success := true;
 break a;
 end if;
@@ -77,7 +77,7 @@ M := Matrix([b,c,d,e]);
 transform := M*Cinv;
 if Determinant(transform) eq 1 then
     if Denominator(transform) eq 1 then
-	print index,deg,weights,Rays(PP),mon[1],OD,Q,a,a+b,a+c,a+d,a+e,transform,"Irrational";
+	print number,deg,weights,Rays(PP),mon[1],OD,Q,a,a+b,a+c,a+d,a+e,transform,"Irrational";
 	success := true;
 	break a;
     end if;
