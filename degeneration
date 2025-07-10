@@ -73,7 +73,7 @@ for b in differences do
 for c in differences do
 for d in differences do
 for e in differences do
-M := Matrix([b,c,d,e]);
+M := Transpose(Matrix([b,c,d,e]));
 transform := M*Cinv;
 if Determinant(transform) eq 1 then
     if Denominator(transform) eq 1 then
