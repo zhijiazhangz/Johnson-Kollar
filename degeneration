@@ -3,17 +3,25 @@
 
 //v1: this is the one I've run so far.  It is fast enough to get through most examples, but does not 
 //tell you the explicit birational map
-i := 610;
-number := i;
-for weights in sporadic[i .. i] do
+i := 3001;
+number := i-1;
+irrlist := [];
+for weights in sporadic[3001 .. 4442] do
 success := false;
 number := number +1;
 T := Cputime();
 deg := &+weights-1;
-P := PolynomialRing(Rationals(),weights);
-mon := MonomialsOfWeightedDegree(P,deg);
+exp := deg div weights[1]; 
+if deg mod weights[1] eq 0 then
+tordiv := [exp,0,0,0,0];
+else
+remainder := [j:j in [2 .. 5] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1],0,0,0,0];
+tordiv[other] := 1;
+end if;
 PP := WeightedProjectiveSpace(Rationals(),weights);
-OD := Divisor(PP,Exponents(mon[1])); //Weil divisor which is section of O(D)
+OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
 Q := RiemannRochPolytope(OD);
 points := [point: point in Points(Q)];
 r := #Points(Q);
@@ -30,7 +38,8 @@ if Determinant(Matrix([differences[b],differences[c],differences[d],differences[
 pol := Polytope([points[a],points[b],points[c],points[d],points[e]]);
 if IsEquivalent(pol, C) eq true then
 irrational := "Irrational";
-print number,deg,weights,Rays(PP),mon[1],OD,Q,pol,"Irrational";
+print number,deg,weights,Rays(PP),tordiv,OD,Q,pol,"Irrational";
+Append(~irrlist,number);
 success := true;
 break a;
 end if;
@@ -45,6 +54,7 @@ if success eq false then
 print number,weights,deg,"Unknown";
 end if;
 end for;
+print irrlist;
 
 
 //v2: Here is another implementation using matrices which is more conceptually straightforward and probably more generally applicable.  Right now it is a bit slower.
@@ -56,11 +66,17 @@ success := false;
 number := number +1;
 T := Cputime();
 deg := &+weights-1;
-P := PolynomialRing(Rationals(),weights);
-mon := MonomialsOfWeightedDegree(P,deg);
+exp := deg div weights[1]; 
+if deg mod weights[1] eq 0 then
+tordiv := [exp,0,0,0,0];
+else
+remainder := [j:j in [2 .. 5] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1],0,0,0,0];
+tordiv[other] := 1;
+end if;
 PP := WeightedProjectiveSpace(Rationals(),weights);
-OD := Divisor(PP,Exponents(mon[1])); //Weil divisor which is section of O(D)
-Q := RiemannRochPolytope(OD);
+OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
 points := [point: point in Points(Q)];
 r := #Points(Q);
 cubic := [[1,0,0,0],[2,1,0,0],[0,2,1,0],[0,0,2,1],[0,0,0,2]];
