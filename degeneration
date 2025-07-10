@@ -42,7 +42,7 @@ end for;
 end for;
 print Cputime(T);
 if success eq false then
-print index,weights,deg,"Unknown";
+print number,weights,deg,"Unknown";
 end if;
 end for;
 
@@ -88,7 +88,7 @@ end for;
 end for;
 end for;
 if success eq false then
-print index,weights,deg,"Unknown";
+print number,weights,deg,"Unknown";
 end if;
 print Cputime(T);
 end for;
