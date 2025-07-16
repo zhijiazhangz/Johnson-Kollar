@@ -110,3 +110,45 @@ end if;
 print Cputime(T);
 end for;
 
+
+//Code for testing rationality by showing polytopes are "narrow" in some direction
+testlist := [612];
+ratlist := [];
+for i in testlist do
+weights := sporadic[i];
+success := false;
+T := Cputime();
+deg := &+weights-1;
+exp := deg div weights[1]; 
+if deg mod weights[1] eq 0 then
+tordiv := [exp,0,0,0,0];
+else
+remainder := [j:j in [2 .. 5] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1],0,0,0,0];
+tordiv[other] := 1;
+end if;
+PP := WeightedProjectiveSpace(Rationals(),weights);
+OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
+Q := RiemannRochPolytope(OD);
+points := [point: point in Points(Q)];
+a := Vertices(Q)[1];
+differences := [p - a: p in points];
+vec := [];
+const := [];
+for b in differences do
+Append(~vec,b);
+Append(~const,0);
+Append(~vec,-b);
+Append(~const,-1);
+end for;
+SolutionSpace := PolyhedronWithInequalities(vec,const);
+if #Points(SolutionSpace) gt 1 then
+solutions := [point: point in Points(SolutionSpace) | point ne (Ambient(SolutionSpace) ! [0,0,0,0])];
+print i,deg,weights,Rays(PP),tordiv,OD,Q,a,solutions[1],"Rational",Cputime(T);
+Append(~ratlist, i);
+else
+print i,weights,deg,"Unknown",Cputime(T);
+end if;
+end for;
+
