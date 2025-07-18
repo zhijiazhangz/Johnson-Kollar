@@ -187,9 +187,9 @@ for i in [1..#mon] do
 	usevarK+:=1;
 	generalpol+:=K.usevarK*mon[i];
 end for;
-Asp:=AffineSpace(K,usevarK);
+Asp:=AffineSpace(K,usevar);
 AAp:=CoordinateRing(Asp);
-adtmp:=hom<KK->AAp|[AAp.i:i in [1..usevarK]] cat [1:i in [usevarK+1..1000]]>;
+adtmp:=hom<KK->AAp|[AAp.i:i in [1..usevar]] cat [1:i in [usevar+1..1000]]>;
 
 newpol:=mp(generalpol);
 monnewpol:=Monomials(newpol);
@@ -247,12 +247,3 @@ end for;
 end for;
 iy;
 end for;
-//Here are the extra cases this found
-two:=[2260,
-2476,
-2587,
-2619,
-2734,
-2794,
-2890,
-3180];
