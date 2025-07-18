@@ -531,3 +531,6 @@ rat1list:=[ 1224, 1323, 1410, 1420, 1448, 1520, 1757, 1764, 1953, 1967, 1983, 20
 
 //Families proven to be rational using the "width 1 polytope after removing two monomials" idea:
 rat2list:=[ 2260, 2476, 2587, 2619, 2734, 2794, 2890, 3180 ];
+
+//Families proven to be rational using the "width 1 polytope after removing three monomials" idea:
+rat3list:=[1851, 2061, 2083, 2099, 2198, 2231, 2234, 2262];
