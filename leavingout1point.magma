@@ -1,4 +1,5 @@
 tt:=Sort(t);
+//tt is the full list
 rem:=[ 1224, 1323, 1378, 1410, 1420, 1448, 1520, 1527, 1606, 1626, 1649, 1724, 1757, 
 1764, 1778, 1779, 1780, 1783, 1826, 1844, 1846, 1851, 1856, 1877, 1885, 1911, 
 1912, 1950, 1953, 1956, 1967, 1973, 1975, 1982, 1983, 1989, 2009, 2013, 2014, 
@@ -118,7 +119,7 @@ end for;
 
 
 
-
+//this is the remaining cases
 after:=<1378, 1527, 1606, 1626, 1649, 1724, 1778, 1779, 1780, 1783, 1826, 1844, 1846, 
 1851, 1856, 1877, 1885, 1911, 1912, 1950, 1956, 1973, 1975, 1982, 1989, 2009, 
 2013, 2014, 2015, 2023, 2035, 2037, 2039, 2057, 2061, 2074, 2075, 2083, 2087, 
@@ -146,3 +147,112 @@ after:=<1378, 1527, 1606, 1626, 1649, 1724, 1778, 1779, 1780, 1783, 1826, 1844, 
 3802, 3818, 3820, 3837, 3838, 3847, 3850, 3854, 3872, 3873, 3880, 3883, 3884, 
 3885, 3902, 3951, 3952, 3954, 3955, 3988, 3996, 3997, 3999, 4016, 4017, 4038, 
 4039, 4040, 4053, 4056, 4065, 4155>;
+
+
+
+//Now the following is checking with 2 points removed 
+
+
+for iy in after do 
+
+weights:=tt[iy];
+
+success := false;
+T := Cputime();
+deg := &+weights-1;
+K<[cof]>:=FunctionField(Rationals(),1000);
+KK<[va]>:=PolynomialRing(K,1000);
+usevar:=0;
+P := PolynomialRing(KK,weights);
+mon := MonomialsOfWeightedDegree(P,deg);
+PP := WeightedProjectiveSpace(Rationals(),weights);
+RR:=Rays(PP);
+mm:=Transpose(Matrix(Rationals(),RR));
+change:=AssociativeArray();
+
+for x in [1..5] do 
+	change[x]:=P.x;
+	addmon:=MonomialsOfWeightedDegree(P,weights[x]); 
+	for y in addmon do 
+		if y ne P.x then usevar+:=1;change[x]+:=KK.usevar*y;end if;
+	end for;
+end for;
+
+mp:=hom<P->P|[change[i]:i in [1..5]]>;
+
+
+generalpol:=0;
+usevarK:=0;
+for i in [1..#mon] do 
+	usevarK+:=1;
+	generalpol+:=K.usevarK*mon[i];
+end for;
+Asp:=AffineSpace(K,usevarK);
+AAp:=CoordinateRing(Asp);
+adtmp:=hom<KK->AAp|[AAp.i:i in [1..usevarK]] cat [1:i in [usevarK+1..1000]]>;
+
+newpol:=mp(generalpol);
+monnewpol:=Monomials(newpol);
+coenewpol:=Coefficients(newpol);
+monold:=Monomials(generalpol);
+coeold:=Coefficients(generalpol);
+exp := deg div weights[1]; 
+if deg mod weights[1] eq 0 then
+tordiv := [exp,0,0,0,0];
+else
+remainder := [j:j in [2 .. 5] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1],0,0,0,0];
+tordiv[other] := 1;
+end if;
+PP := WeightedProjectiveSpace(Rationals(),weights);
+OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
+Q := RiemannRochPolytope(OD);
+pointsall := [point: point in Points(Q)];
+for leaving in [2] do 
+ch:=choose(#pointsall,leaving);
+for poss in ch do 
+points:=[pointsall[i]:i in [1..#pointsall]|not i in poss];
+a := points[1];
+differences := [p - a: p in points];
+vec := [];
+const := [];
+for b in differences do
+Append(~vec,b);
+Append(~const,0);
+Append(~vec,-b);
+Append(~const,-1);
+end for;
+SolutionSpace := PolyhedronWithInequalities(vec,const);
+//SolutionSpace;
+//iy;#Points(SolutionSpace);
+
+if not IsPolytope(SolutionSpace) or (IsPolytope(SolutionSpace) and #Points(SolutionSpace) gt 1) then
+//solutions := [point: point in Points(SolutionSpace) | point ne (Ambient(SolutionSpace) ! [0,0,0,0])];
+dropvec:=[Vector((pointsall[jj]))*mm+Vector(tordiv):jj in poss];
+//print poss ;
+dropmon:=[&*[(P.i)^(Integers()!(Eltseq(dropvec[jj]))[i]):i in [1..5]]:jj in [1..#dropvec]];
+//dropmon;
+rell:=[];
+for tocancel in dropmon do 
+	Append(~rell,coenewpol[Position(monnewpol,tocancel)]);
+end for;
+solscheme:=Scheme(Asp,[adtmp(x):x in rell]);
+if Dimension(solscheme) ne -1 then <leaving, iy>;continue iy;end if;
+//if coeold[Position(monold,dropmon)] ne coenewpol[Position(monnewpol,dropmon)] then 
+//iy;Append(~maybe,<iy,dropmon,weights,deg,mon>); continue iy;
+//end if;
+end if;
+end for;
+end for;
+iy;
+end for;
+//Here are the extra cases this found
+two:=[2260,
+2476,
+2587,
+2619,
+2734,
+2794,
+2890,
+3180];
