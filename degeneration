@@ -152,3 +152,64 @@ print i,weights,deg,"Unknown",Cputime(T);
 end if;
 end for;
 
+//Code for testing rationality using a certain conic bundle structure
+ratlist := [];
+for i in testlist do
+T := Cputime();
+weights := sporadic[i];
+success := false;
+deg := &+weights-1;
+exp := deg div weights[1];
+if deg mod weights[1] eq 0 then
+tordiv := [exp,0,0,0,0];
+else
+remainder := [j:j in [2 .. 5] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1],0,0,0,0];
+tordiv[other] := 1;
+end if;
+PP := WeightedProjectiveSpace(Rationals(),weights);
+OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
+Q := RiemannRochPolytope(OD);
+points := [point: point in Points(Q)];
+for a in points do
+differences := [p - a: p in points];
+vec := [];
+const := [];
+for b in differences do
+Append(~vec,b);
+Append(~const,0);
+Append(~vec,-b);
+Append(~const,-2);
+end for;
+SolutionSpace := PolyhedronWithInequalities(vec,const);
+solutions := [point: point in Points(SolutionSpace) | point ne (Ambient(SolutionSpace) ! [0,0,0,0])];
+solnum := #solutions;
+for c in [1 .. solnum] do
+for d in [1 .. solnum] do
+if Gcd(Minors(Matrix([solutions[c],solutions[d]]),2)) eq 1 then
+box1 := [vec: vec in differences | (solutions[c]*vec) eq 2];
+box2 := [vec: vec in differences | (solutions[d]*vec) eq 2];
+box3 := [vec: vec in differences | ((solutions[c]+solutions[d])*vec) eq 2];
+if #box1 eq 0 or #box2 eq 0 then
+success := true;
+print i,deg,weights,Rays(PP),tordiv,OD,Q,differences,a,solutions[c],box1,solutions[d],box2,"Rational: Linear",Cputime(T);
+Append(~ratlist,i);
+break a;
+else
+if #box1 eq 1 and #box2 eq 1 and #box3 eq 3 and Dimension(Polytope(box3)) eq 1 then
+success := true;
+print i,deg,weights,Rays(PP),tordiv,OD,Q,differences,a,solutions[c],solutions[d],box3,"Rational: Conic",Cputime(T);
+Append(~ratlist,i);
+break a;
+end if;
+end if;
+end if;
+end for;
+end for;
+end for;
+if success eq false then
+print i,weights,deg,"Unknown";
+end if;
+end for;
+print ratlist;
