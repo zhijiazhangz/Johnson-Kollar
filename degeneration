@@ -213,3 +213,24 @@ print i,weights,deg,"Unknown";
 end if;
 end for;
 print ratlist;
+
+
+
+
+//Code for computing middle row of Hodge diamond for Fano 3-fold hypersurfaces (works for any 3-fold hypersurface actually)
+//Let's calculate Hodge numbers in middle row for our threefolds (see Dolgachev, Section 4 or Iano-Fletcher, Theorem 7.2)
+function MiddleCohomology(weights,deg)
+P<[x]> := PolynomialRing(Rationals(),weights);
+test := false;
+while test eq false do
+f := &+[Random(1,10)*mon: mon in MonomialsOfWeightedDegree(P,deg)];
+A<[x]> := AffineSpace(Rationals(),5);
+if Dimension(SingularSubscheme(Scheme(A,f))) eq 0 then
+I := ideal< P | [Derivative(f,i): i in [1 .. 5]]>;
+H<t> := HilbertSeries(P/I);
+half := [Coefficient(Numerator(H),(i+1)*deg - &+weights): i in [2 .. 3]];
+return Reverse(half) cat half;
+test := true;
+end if;
+end while;
+end function;
