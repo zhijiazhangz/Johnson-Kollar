@@ -1,0 +1,29 @@
+//Code for computing Aut_{tor}(X) of a Delsarte hypersurface as well as generators
+//The output is: 1) the automorphism group, as a finite abelian group, with the names of the generators listed
+//2) The exponent e of Aut_{tor}(X), which is the largest root of unity we need for our group
+//3) The generators of Aut_{tor}(X), in the same order listed as (1), as explicit elements.
+//Each of these is a vector, where the ith entry tells you what power of zeta_e acts on the ith variable
+
+//Example matrix
+//A := Matrix(Rationals(),5,5,[[26,0,0,1,0],[0,7,0,0,0],[0,0,3,0,1],[0,1,0,3,0],[1,0,0,0,3]]);
+function Automorphisms(A)
+k := Nrows(A);
+v := Matrix(Rationals(),k,1,[1: i in [1 .. k]]); //all ones vector
+q := A^(-1)*v;
+charges := ElementToSequence(q); //Charges vector for ambient weighted projective space
+m := Lcm([Denominator(charge): charge in charges]); //Degree of hypersurface in wps
+d := Lcm([Denominator(b): b in ElementToSequence(A^(-1))]); //Degree of Fermat mapping to wphs
+weights := [Floor(m*charge): charge in charges];
+B := d*A^(-1);
+L := StandardLattice(k);
+qvec := L ! [Floor(d*charge): charge in charges];
+M := sub<L | [d*L.i: i in [1 .. k]] cat [qvec]>;
+N := sub<L | [L ! Transpose(B)[i]: i in [1 .. k]]>;
+Aut,phi := N/M; //The automorphism group of the Delsarte hypersurface
+generators := [];
+for j in [1 .. Ngens(Aut)] do
+reps := [a*qvec + Aut.j @@ phi: a in [0 .. d-1] | d/Gcd(ElementToSequence(a*qvec + Aut.j @@ phi)) eq Order(Aut.j)];
+Append(~generators,[(x div (d div Exponent(Aut))) mod Exponent(Aut): x in ElementToSequence(reps[1])]); 
+end for;
+return Aut, Exponent(Aut), generators; //Outputs generators of automorphism group, written in terms of what they do to each variable
+end function;
