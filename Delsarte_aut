@@ -22,7 +22,7 @@ N := sub<L | [L ! Transpose(B)[i]: i in [1 .. k]]>;
 Aut,phi := N/M; //The automorphism group of the Delsarte hypersurface
 generators := [];
 for j in [1 .. Ngens(Aut)] do
-reps := [a*qvec/(d div m) + Aut.j @@ phi: a in [0 .. d-1] | d/Gcd(ElementToSequence(a*qvec + Aut.j @@ phi)) eq Order(Aut.j)];
+reps := [a*qvec/(d div m) + Aut.j @@ phi: a in [0 .. d-1] | d/Gcd(ElementToSequence(a*qvec/(d div m) + Aut.j @@ phi)) eq Order(Aut.j)];
 Append(~generators,[(x div (d div Exponent(Aut))) mod Exponent(Aut): x in ElementToSequence(reps[1])]); 
 end for;
 return Aut, Exponent(Aut), generators; //Outputs generators of automorphism group, written in terms of what they do to each variable
