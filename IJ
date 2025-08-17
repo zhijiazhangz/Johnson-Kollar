@@ -1,0 +1,167 @@
+//This file contains some code for finding intermediate Jacobian obstructions
+
+//Preliminary functions:
+
+function valid_graph(num, edgeset, roots); // input is number of vertices, set of ordered pairs of directed edges
+					// and distinguished vertices called roots
+    valid := true;
+    for i := 1 to num do
+	if #[j: j in edgeset | j[1] eq i] gt 1 or #[j: j in edgeset | j[2] eq i] gt 1 then
+		// A valid graph can have no more than one directed edge pointing to a given vertex or from a given vertex
+	    valid := false;
+	    break;
+	end if;
+	if #[j: j in edgeset | j[1] eq i] eq 0 and i in roots eq false then
+		// Any vertex of a valid graph with no edge pointing out of it must be a root
+	    valid := false;
+	    break;
+	end if;
+    end for;
+    if valid eq true then
+	return true;
+    else
+	return false;
+    end if;
+end function;
+
+function matrix_potentials(wphs);
+    deg := wphs[1];
+    num_weights := #wphs - 1; // This gives the number of weights (dimension of hypersurf + 2)
+    alledges := {}; // This is a set where we'll store edges in the graph corresponding to f
+    roots := [];
+    for i := 1 to num_weights do
+	weight := wphs[i+1];
+	if deg mod weight eq 0 then
+	    Append(~roots,i); // The weights which divide the degree are the possible "roots" of valid graphs
+	end if;
+	set := [1 .. num_weights];
+	Exclude(~set,i);
+	for j in set do // This searches other weights so that d-a_j is divisible by weight
+	    if (deg - wphs[j+1]) mod weight eq 0 then
+		Include(~alledges, [i,j]); // A valid edge is i -> j where X_i^a X_j is a monomial of degree d
+	    end if;
+	end for;
+    end for;
+    matrix_list := [];
+    P := {{}};
+    for i := 1 to num_weights do //At most n edges are present in a valid graph (one pointing out of each vertex)
+	P := P join Subsets(alledges,i);
+    end for;
+    for edgeset in P do //We'll test possible edge sets for valid potentials
+	if valid_graph(num_weights,edgeset, roots) eq true then
+	    matrix := [[]: i in [1 .. num_weights]];
+	    usedroots := [i: i in [1 .. num_weights] | #[j: j in edgeset | j[1] eq i] eq 0];
+	    for i in usedroots do
+		monomial := [0: j in [1 .. num_weights]];
+	    	monomial[i] := deg / wphs[i+1];
+		matrix[i] := monomial;
+	    end for;
+	    for edge in edgeset do
+		monomial := [0: j in [1 .. num_weights]];
+		monomial[edge[1]] := (deg - wphs[edge[2]+1]) / wphs[edge[1] +1];
+		monomial[edge[2]] := 1;
+		matrix[edge[1]] := monomial;
+	    end for;
+	    Append(~matrix_list, matrix);
+	end if;
+    end for;
+    return [Matrix(RationalField(), num_weights, num_weights, potential): potential in matrix_list];
+end function;
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+//Run 1: Testing for IJ obstruction using automorphisms of prime order
+//Assumption: we have h^{1,2} = g, prime = 2g + 1 is prime, and Aut(X) contains an element of order prime = 2g+1
+//Required functions: matrix_potentials
+//Note: the actions computed here are on the duals of the tangent spaces to intermediate Jacobians and Jacobians,
+//respectively.
+status_list := [];
+for i in [1 .. 4442] do
+print i;
+status := "Unknown";
+weights := sporadic[i];
+deg := &+weights - 1;
+for A in matrix_potentials([deg] cat weights) do
+
+//Part 1: Find monomial basis for h^{1,2}(X)
+k := Nrows(A);
+p := 1; //value for the Hodge h^{q,p} we want to calculate
+P<[x]> := PolynomialRing(Rationals(),weights);
+f := &+[&*[x[j]^(Floor(A[i][j])): j in [1 .. k]]: i in [1 .. k]];
+mons := MonomialsOfWeightedDegree(P,(p+1)*deg - &+weights);
+V := VectorSpace(Rationals(),#mons); //Vector space of polynomials of given degree
+spanlist := [];
+for j in [1 .. k] do
+deriv := Derivative(f,x[j]);
+multipliers := MonomialsOfWeightedDegree(P,(p+1)*deg-&+weights-(deg-weights[j]));
+for term in multipliers do
+Append(~spanlist,[MonomialCoefficient(term*deriv,mon): mon in mons]);
+end for;
+end for;
+W := sub<V | spanlist>;
+quotient, psi := V/W;
+basis_indices := [];
+for aa in [1 .. #mons] do //Construct a monomial basis of H^{q,p}(X) by discarding dependent monomials
+if IsIndependent([psi(V.l): l in basis_indices cat [aa]]) eq true then
+Append(~basis_indices, aa);
+end if;
+end for;
+basis := mons[basis_indices];
+h12 := #basis;
+
+//Part 2: Find automorphism group of X
+v := Matrix(Rationals(),k,1,[1: i in [1 .. k]]); //all ones vector
+q := A^(-1)*v;
+charges := ElementToSequence(q); //Charges vector for ambient weighted projective space
+deg := Lcm([Denominator(charge): charge in charges]); //Degree of hypersurface in wps
+d := Lcm([Denominator(b): b in ElementToSequence(A^(-1))]); //Degree of Fermat mapping to wphs
+weights := [Floor(deg*charge): charge in charges];
+B := d*A^(-1);
+L := StandardLattice(k);
+qvec := L ! [Floor(d*charge): charge in charges];
+M := sub<L | [d*L.i: i in [1 .. k]] cat [qvec]>;
+N := sub<L | [L ! Transpose(B)[i]: i in [1 .. k]]>;
+Aut,phi := N/M; //The automorphism group of the Delsarte hypersurface
+order := Order(Aut);
+prime := 2*h12+1;
+
+if order mod prime eq 0 and prime ge 3 and IsPrime(prime) eq true then
+
+//Part 3: Find eigenvalues of action of order p element on H^{2,1} = T_0(IJ(X))
+g := [h: h in Aut | Order(h) eq prime][1]; //generator of Z/p subgroup
+reps := [a*qvec/(d div deg) + g @@ phi: a in [0 .. d-1] | d/Gcd(ElementToSequence(a*qvec/(d div deg) + g @@ phi)) eq Order(g)];
+gaction := [(x div (d div prime)) mod prime: x in ElementToSequence(reps[1])];
+twist := &+gaction; //We have to twist by the determinantal action
+eqvalue := Floor(-(p+1)*(&+[A[1][j]*gaction[j]: j in [1 .. k]])); //twist down by f^{p+1}
+eigenvalues := {* (&+[gaction[i]*Exponents(basis[j])[i]: i in [1 .. k]] + twist + eqvalue) mod prime : j in [1 .. #basis] *};
+
+
+//Part 4: Test to see if eigenvalues match those of the Jacobian of some curve
+//Source: ON THE CURVES OF GENUS g WITH AUTOMORPHISMS OF PRIME ORDER 2g+1 by Seyama
+//We compute the eigenvalues on the curve y^r(y-1) = x^prime for each r in 1,...,prime-2
+match := false;
+for r in [1 .. prime-2] do
+E := {* e : e in [1 .. prime-1] | (e + (r*e) mod prime) le prime-1 *};
+for s in [1 .. prime - 1] do
+Es := {* s*e mod prime: e in E *};
+if eigenvalues eq Es then
+match := true;
+print weights, deg, A, h12, Aut, gaction, eigenvalues, r, s, "Possibly Rational";
+status := "Possibly Rational";
+break r;
+end if;
+end for;
+end for;
+if match eq false then
+print weights, deg, A, h12, Aut, gaction, eigenvalues, "Irrational";
+status := "Irrational";
+break A;
+end if;
+
+end if;
+end for;
+Append(~status_list,<i,status>);
+
+end for;
+///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
