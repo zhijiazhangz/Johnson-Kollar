@@ -68,19 +68,75 @@ function matrix_potentials(wphs);
     return [Matrix(RationalField(), num_weights, num_weights, potential): potential in matrix_list];
 end function;
 
+function WphsPolytope(weights,deg)
+dim := #weights - 2;
+exp := deg div weights[1]; 
+if deg mod weights[1] eq 0 then
+tordiv := [exp] cat [0: i in [1 .. dim+1]];
+else
+remainder := [j:j in [2 .. dim+2] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1]] cat [0: i in [1 .. dim+1]];
+tordiv[other] := 1;
+end if;
+PP := WeightedProjectiveSpace(Rationals(),weights);
+OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
+Q := RiemannRochPolytope(OD);
+return Q;
+end function;
+
+function EquationToPolytope(weights,A) //This function takes in an equation of a wphs and
+					//outputs the Newton polytope
+PP := WeightedProjectiveSpace(Rationals(),weights);
+raymatrix := Matrix(Rays(PP));
+vertices := [ElementToSequence(Solution(Transpose(raymatrix),Vector(Integers(),[A[i][j]-A[1][j]:j in [1 .. 5]]))):i in [1 .. 5]];
+return Polytope(vertices);
+end function;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////
-//Run 1: Testing for IJ obstruction using automorphisms of prime order
-//Assumption: we have h^{1,2} = g, prime = 2g + 1 is prime, and Aut(X) contains an element of order prime = 2g+1
-//Required functions: matrix_potentials
+///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+// Testing for IJ obstruction using automorphisms of prime order
+//Assumption: we have h^{1,2} = g, prime = 2g + 1 is prime, Aut(X) contains an element of order prime = 2g+1,
+//and the hypersurface X has singularities only at isolated points or along genus zero curves
+//Required functions: matrix_potentials, EquationToPolytope, WphsPolytope
 //Note: the actions computed here are on the duals of the tangent spaces to intermediate Jacobians and Jacobians,
 //respectively.
 status_list := [];
-for i in [1 .. 4442] do
+irrational_polytope_list := [];
+for i in [1 .. 4442] do //insert here which families to test
 print i;
 status := "Unknown";
 weights := sporadic[i];
 deg := &+weights - 1;
+
+//Part 0: Check singularities of family
+//X is well-formed, hence smooth outside of codim 2, so the only strata to check are those
+//where X intersects a 2D stratum with corresponding weights having a gcd > 1
+maxgenus := 0;
+for a in [1 .. 5] do
+for b in [a+1 .. 5] do
+sub := Remove(Remove(weights, b),a);
+if Gcd(sub) gt 1 then
+wred := [w div Gcd(sub):w in sub];
+dred := deg div Gcd(sub);
+while Max([Gcd(wred[1],wred[2]),Gcd(wred[1],wred[3]),Gcd(wred[2],wred[3])]) gt 1 do
+offenders := [i: i in [[1,2],[1,3],[2,3]] | Gcd(wred[i[1]],wred[i[2]]) gt 1];
+o := offenders[1];
+g := Gcd(wred[o[1]],wred[o[2]]);
+wred[o[1]] := wred[o[1]] div g;
+wred[o[2]] := wred[o[2]] div g;
+dred := dred div g;
+end while;
+P := WphsPolytope(wred,dred);
+maxgenus := Max(maxgenus,#InteriorPoints(P));
+end if;
+end for;
+end for;
+
+if maxgenus eq 0 then
+
 for A in matrix_potentials([deg] cat weights) do
 
 //Part 1: Find monomial basis for h^{1,2}(X)
@@ -155,13 +211,19 @@ end for;
 if match eq false then
 print weights, deg, A, h12, Aut, gaction, eigenvalues, "Irrational";
 status := "Irrational";
-break A;
+Append(~irrational_polytope_list,<i,weights,deg,A,h12,Vertices(EquationToPolytope(weights,A))>);
+//break A; //Change this based on whether we want program to terminate after finding just one Delsarte irrational one in a family or not
 end if;
 
 end if;
+
+
 end for;
 Append(~status_list,<i,status>);
+end if;
 
 end for;
+print irrational_polytope_list;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////
