@@ -4824,7 +4824,7 @@ $2412$&$( 11, 13, 15, 52, 79, 169 )$&$12$&Rational& (W)\\\hline
 
 $2413$&$( 11, 13, 16, 65, 104, 208 )$&$18$&Irrational&A2\\\hline
 
-2414&( 11, 13, 17, 25, 48, 113 )&8&Irrational & \ref{theorem:IJ_irr}\\\hline
+$2414$&$( 11, 13, 17, 25, 48, 113 )$&$8$&Irrational & \ref{theorem:IJ_irr}\\\hline
 
 $2415$&$( 11, 13, 22, 33, 65, 143 )$&$16$&Rational& (W)\\\hline
 
@@ -5982,7 +5982,7 @@ $2991$&$( 18, 157, 537, 1247, 1801, 3759 )$&$8$&Unknown& ?\\\hline
 
 $2992$&$( 18, 161, 551, 729, 1458, 2916 )$&$6$&Rational&(W')\\\hline
 
-2993&( 18, 191, 407, 1212, 1827, 3654 )&8& Irrational & \ref{theorem:IJ_irr} \\\hline
+$2993$&$( 18, 191, 407, 1212, 1827, 3654 )$&$8$& Irrational & \ref{theorem:IJ_irr} \\\hline
 
 $2994$&$( 19, 19, 33, 44, 95, 209 )$&$10$&Rational& (W)\\\hline
 
@@ -6100,7 +6100,7 @@ $3050$&$( 19, 420, 1330, 3097, 4445, 9310 )$&$13$&Rational& (W)\\\hline
 
 $3051$&$( 19, 439, 755, 2405, 3617, 7234 )$&$7$&Unknown& ?\\\hline
 
-3052&( 19, 459, 561, 1496, 2515, 5049 )&5& Irrational &\ref{theorem:IJ_irr}\\\hline
+$3052$&$( 19, 459, 561, 1496, 2515, 5049 )$&$5$& Irrational &\ref{theorem:IJ_irr}\\\hline
 
 $3053$&$( 19, 490, 770, 2047, 2835, 6160 )$&$5$&Irrational&A5\\\hline
 
@@ -6110,9 +6110,9 @@ $3055$&$( 19, 553, 1748, 4085, 5851, 12255 )$&$13$&Rational& (W)\\\hline
 
 $3056$&$( 19, 661, 1036, 2769, 3823, 8307 )$&$5$&Irrational&A5\\\hline
 
-3057&( 19, 877, 1074, 2864, 4833, 9666 )&5& Irrational & \ref{theorem:IJ_irr}\\\hline
+$3057$&$( 19, 877, 1074, 2864, 4833, 9666 )$&$5$& Irrational & \ref{theorem:IJ_irr}\\\hline
 
-3058&( 19, 896, 1093, 2921, 4928, 9856 )&5& Irrational & \ref{theorem:IJ_irr} \\\hline
+$3058$&$( 19, 896, 1093, 2921, 4928, 9856 )$&$5$& Irrational & \ref{theorem:IJ_irr} \\\hline
 
 $3059$&$( 20, 22, 25, 55, 99, 220 )$&$9$&Irrational&A2\\\hline
 
