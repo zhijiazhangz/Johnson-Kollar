@@ -112,9 +112,18 @@ f := &*[1-t^(deg-weights[i]):i in [1 .. dim+2]] * &*[1/(1-t^(weights[i])):i in [
 return [0: j in [0 .. dim] | (j+1)*deg - &+weights lt 0] cat [Coefficient(f,(j+1)*deg - &+weights): j in [0 .. dim] | (j+1)*deg - &+weights ge 0];
 end function;
 
+function MinGenus(N) //outputs minimum genus curve with a faithful Z/N action, for certain N (only allowable N's in case list will work)
+table := [[9,3],[15,4],[21,6],[25,10],[27,9],[33,10],[35,12],[39,12],[45,15]];
+if N ge 3 and IsPrime(N) eq true then
+return (N-1) div 2;
+else
+return &+[entry[2]: entry in table | entry[1] eq N];
+end if;
+end function;
+
 //The function below records whether the hypersurface under consideration is one my test can handle
 //cases := [[9,4],[15,4], [15,5], [15, 6],[21,6],[21,7],[21,8],[21,9], [25,10],[27,9],[33,10],[33,11],[33,12]];
-cases := [[15,4],[21,6], [25,10],[27,9],[33,10]];
+cases := [[9,4],[15,4], [15,5], [15, 6],[21,6],[21,7],[21,8],[21,9],[25,10],[27,9],[33,10],[33,11],[33,12]];
 function TestValidity(N,h12)
 if N ge 9 and N eq 2*h12 + 1 and IsPrime(N) eq true then
 return true;
@@ -133,9 +142,9 @@ end function;
 status_list := [];
 irrational_polytope_list := [];
 
-testlist := [sporadic[i] cat [&+sporadic[i]-1]: i in [1 .. 4442]];
-//Set "remaining" to be the family numbers you want to check
-for i in remaining do //insert here which families to test, objects to test MUST be input as [a1,a2,a3,a4,a5,deg]
+testlist := [sporadic[i] cat [&+sporadic[i]-1]: i in [1 .. 4442]]; //sporadic is the list of 4442 tuples of weights
+
+for i in [1000 .. 4442] do //insert here which families to test, objects to test MUST be input as [a1,a2,a3,a4,a5,deg]
 print i;
 status := "Unknown";
 weights := testlist[i][1 .. 5];
@@ -221,13 +230,13 @@ gaction := [(x div (d div order)) mod order: x in ElementToSequence(reps[1])];
 twist := &+gaction; //We have to twist by the determinantal action
 eqvalue := Floor(-(p+1)*(&+[A[1][j]*gaction[j]: j in [1 .. k]])); //twist down by f^{p+1}
 eigenvalues := {* (&+[gaction[i]*Exponents(basis[j])[i]: i in [1 .. k]] + twist + eqvalue) mod order : j in [1 .. #basis] *};
-condition := true;
-if Gcd(&*eigenvalues,order) eq 1 then
-condition := true; //This is the condition that no g \neq id acts with any eigenvalues equal to 1; this makes proofs easier and always seems to hold
+condition := false;
+if #[e: e in eigenvalues | Gcd(e,order) eq 1] ge 1 then
+condition := true; //This is the condition that some eigenvalue is a primitive Nth root of unity, where G = Z/N
 end if;
 
 
-//Part 4: Test to see if eigenvalues match those of the Jacobian of some curve
+//Part 4: Test to see if eigenvalues match those of the Jacobian of some curve(s)
 //Source: "On a family of quotients of Fermat curves" by 
 // Irokawa and Sasaki
 //We compute the eigenvalues on the curve y^N = x^r (1-x)^s for each admissible pair (r,s)
@@ -236,8 +245,8 @@ match := false;
 for rec in Subgroups(G) do //iterate over possible kernels K of permutation representation of G on product of Jacobians
 K := rec`subgroup;
 H := G/K;
-if &+([p[1]^p[2]: p in Factorization(Order(H))] cat [1]) le h12 and (h12 mod Order(H)) eq 0 then //If first condition fails, H cannot act by permutation on Jacobians, so we can skip this possibility. 
-//I assume that in the cases where we could have a nontrivial permutation, Order(H) divides h12.  This is verified in all the cases we're testing, but be careful with generalizing.
+if &+([p[1]^p[2]: p in Factorization(Order(H))] cat [0]) le h12 then //If first condition fails, 
+//H cannot embed in S_m, m <= h^{1,2}(X), so we can skip this possibility. 
 kerorder := Order(K);
 for r in [1 .. kerorder-1] do
 for s in [1 .. kerorder-1] do
@@ -247,7 +256,7 @@ E := &join[{* i+k*kerorder : i in Ep *}: k in [0 .. Order(H)-1]]; //This takes t
 //list of eigenvalues of the induced representation on all of H^{2,1}(X) by G
 for t in [t: t in [1 .. order-1]| Gcd(order, t) eq 1] do //we consider whether the list E matches our eigenvalues list after any outer automorphism of G
 Et := {* t*a mod order: a in E *};
-if eigenvalues eq Et then
+if Et subset eigenvalues then //this sees whether a product JC_1 x ... x JC_#H each with K-action, cyclically permuted by H, matches the eigenvalue set of H^{2,1}(X)
 match := true;
 print weights, deg, A, h12, Aut, gaction, eigenvalues, K, H, r, s, t, "Possibly Rational";
 status := "Possibly Rational";
@@ -273,6 +282,7 @@ end for;
 end if;
 Append(~status_list,<i,status>);
 end for;
+//print irrational_polytope_list;
 
 
 
