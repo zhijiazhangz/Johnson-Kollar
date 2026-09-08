@@ -123,7 +123,7 @@ end function;
 
 //The function below records whether the hypersurface under consideration is one my test can handle
 //cases := [[9,4],[15,4], [15,5], [15, 6],[21,6],[21,7],[21,8],[21,9], [25,10],[27,9],[33,10],[33,11],[33,12]];
-cases := [[9,4],[15,4], [15,5], [15, 6],[21,6],[21,7],[21,8],[21,9],[25,10],[27,9],[33,10],[33,11],[33,12],[35,14]];
+cases := [[9,4],[15,4], [15,5], [15, 6],[21,6],[21,7],[21,8],[21,9],[25,10],[27,9],[33,10],[33,11],[33,12]];
 function TestValidity(N,h12)
 if N ge 9 and N eq 2*h12 + 1 and IsPrime(N) eq true then
 return true;
