@@ -200,7 +200,7 @@ order := Max([Order(g) : g in Aut]);
 g := [h: h in Aut | Order(h) eq order][1]; //largest order automorphism in Aut(X)
 G := sub<Aut | g>;
 
-if h12 ge 4 and (IsOdd(order) eq true and order ge 2*h12+1) or (IsEven(order) and order gt 4*h12+2) then //Check that this is one of the pairs to which the test applies
+if h12 ge 4 and ((IsOdd(order) eq true and order ge 2*h12+1) or (IsEven(order) and order ge 4*h12+2)) then //Check that this is one of the pairs to which the test applies
 
 //Part 3: Find eigenvalues of action of element on H^{2,1} = T_0(IJ(X))^dual
 reps := [a*qvec/(d div deg) + g @@ phi: a in [0 .. d-1] | d/Gcd(ElementToSequence(a*qvec/(d div deg) + g @@ phi)) eq Order(g)];
