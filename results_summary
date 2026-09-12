@@ -313,43 +313,10 @@ IJfull := [ 375, 376, 378, 380, 385, 386, 398, 402, 404, 408, 411, 416, 420, 422
 */
 
 //IJdeg: The full list of new examples that degenerate to IJ
-IJdeg := [ 1606, 1649, 1778, 1826, 1846, 1851, 1877, 1950, 1956, 1989, 2009, 2013, 2039, 
-2061, 2075, 2197, 2234, 2326, 2330, 2353, 2388, 2451, 2600, 2604, 2623, 2722, 
-2723, 2741, 2764, 2834, 2846, 2918, 2944, 2969, 2971, 3007, 3106, 3190, 3425, 
-3487, 3527, 3818 ];
-
-
-/* OLD: let me keep this around for now
-//IJ 1: New families proven to be irrational by looking at eigenvalues of the action on the
-//tangent space of the intermediate Jacobian, in the case that there exists a Delsarte
-//member of the family with the property 2*h^{1,2} is a prime that divides |Aut_tor(X)|
-
-IJ1 := [ 1626, 2074, 2414, 2466, 2525, 2533, 2649, 2650, 2671, 2754, 2803, 2847, 2849, 
-2851, 2853, 2881, 2892, 2899, 2985, 2986, 2993, 3045, 3052, 3057, 3058, 3061, 
-3156, 3159, 3164, 3167, 3202];
-
-//IJdeg1: New families proven to be irrational by degenerating to a hypersurface
-//proven to be irrational by the intermediate Jacobian method above
-
-IJdeg1 := [ 1778, 1826, 1846, 1877, 1950, 1956, 1989, 2009, 2013, 2039, 2075, 2088, 2113, 
-2197, 2285, 2353, 2363, 2376, 2451, 2496, 2600, 2604, 2623, 2723, 2727, 2820, 
-2834, 2904, 3190 ];
-
-//IJ 2: New families proven to be irrational by looking at eigenvalues of the action on the
-//tangent space of the intermediate Jacobian, in the case that there exists a Delsarte
-//member of the family with automorphism of large composite order: 9, 15, 21, 25, 27, 33
-
-IJ2 := [ 1527, 1724, 1783, 1885, 1911, 2015, 2023, 2037, 2087, 2099, 2104, 2231, 2318, 
-2359, 2585, 2639, 2734, 2744, 2819, 2865, 2870, 2874, 2890, 2916, 2926, 2970, 
-2983, 2987, 3040, 3107, 3123, 3137, 3157, 3233, 3249, 3305, 3307, 3320, 3363, 
-3381, 3408, 3515, 3693, 3709, 3724, 3847 ];
-
-//IJdeg2: New families proven to be irrational by degenerating to a hypersurface
-//proven to be irrational by the intermediate Jacobian method above
-
-IJdeg2 := [ 1606, 1851, 1912, 2061, 2204, 2205, 2234, 2326, 2388, 2764, 2789, 2846, 2918, 
-2969, 2971, 3007, 3106, 3487, 3527 ];
-*/
+IJdeg := [ 1606, 1649, 1778, 1826, 1846, 1851, 1877, 1912, 1950, 1956, 1989, 2009, 2013, 
+2039, 2061, 2075, 2197, 2212, 2234, 2298, 2326, 2330, 2353, 2388, 2451, 2482, 
+2493, 2600, 2604, 2623, 2666, 2722, 2723, 2741, 2764, 2834, 2846, 2918, 2944, 
+2969, 2971, 2991, 3007, 3106, 3190, 3377, 3425, 3487, 3527, 3818 ];
 
 //The total list of known UNCONDITIONAL irrational examples so far is:
 irr := run1 cat run2 cat run3 cat run4 cat run5 cat run6 cat run7 cat run8 cat IJ cat IJdeg;
