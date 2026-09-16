@@ -1,0 +1,207 @@
+
+
+//Families proven to be rational using the "width 1 polytope after removing one monomials" idea:
+rat1list:=[ 1224, 1323, 1410, 1420, 1448, 1520, 1757, 1764, 1953, 1967, 1983, 2068, 2085, 
+2101, 2111, 2119, 2123, 2138, 2164, 2169, 2242, 2252, 2268, 2274, 2278, 2297, 
+2464, 2498, 2516, 2687, 2736, 2835, 2852, 2860, 2869, 2873, 2888, 2905, 2908, 
+2988, 2992, 3006, 3030, 3088, 3094, 3095, 3104, 3114, 3136, 3151, 3153, 3154, 
+3197, 3234, 3242, 3243, 3250, 3252, 3259, 3274, 3303, 3337, 3340, 3342, 3350, 
+3354, 3371, 3373, 3380, 3383, 3385, 3386, 3388, 3430, 3447, 3450, 3452, 3454, 
+3498, 3504, 3518, 3524, 3537, 3546, 3588, 3594, 3595, 3600, 3608, 3610, 3619, 
+3621, 3622, 3651, 3655, 3656, 3658, 3663, 3701, 3750, 3765, 3770, 3772, 3785, 
+3801, 3805, 3810, 3814, 3815, 3834, 3844, 3867, 3879, 3882, 3905, 3915, 3917, 
+3919, 3928, 3932, 3933, 3943, 4020, 4050 ];
+
+
+
+//Families proven to be rational using the "width 1 polytope after removing two monomials" idea:
+//updated list
+rat2list_updated:=[3180];
+
+//Families proven to be rational using the "width 1 polytope after removing three monomials" idea:
+//updated list
+rat3list_upated:=[];
+
+//Families proven to be rational using the "conic bundle with section test":
+//updated list
+ratconic_updates:=[ 2909, 3607, 3634, 3802 ];
+
+//Families proven to be rational using the "conic bundle with section test" after removing one monomial:
+ratconic1list := [ 2255,3147,3395];
+
+
+rat:=rat1list cat
+rat2list_updated cat
+rat3list_upated cat
+ratconic_updates cat
+ratconic1list;
+
+
+rat1:=rat1list cat
+rat2list_updated;
+
+rat2:=
+ratconic_updates cat
+ratconic1list;
+
+
+
+
+function choose(n,k)//choose k elements without permutation in a list ls
+    
+    if k eq 1 then  
+        return [[x]:x in [1..n]];
+    end if;
+    t:=choose(n,k-1);
+    res:=[];
+    for x in t do 
+        for y in [x[k-1]+1..n] do 
+            Append(~res,x cat [y]);
+        end for;
+    end for;
+    return res;
+end function;
+function checkwp(iy,points,weights,deg)
+	//check (W) or (CB) test 
+	for a in points do
+	differences := [p - a: p in points];
+	vec := [];
+	const := [];
+	for b in differences do
+		Append(~vec,b);
+		Append(~const,0);
+		Append(~vec,-b);
+		Append(~const,-2);
+	end for;
+		SolutionSpace := PolyhedronWithInequalities(vec,const);
+		if IsPolytope(SolutionSpace) then 
+		solutions := [point: point in Points(SolutionSpace) | point ne (Ambient(SolutionSpace) ! [0,0,0,0])];
+		solnum := #solutions;
+		for c in [1 .. solnum] do
+			for d in [1 .. solnum] do
+				if Gcd(Minors(Matrix([solutions[c],solutions[d]]),2)) eq 1 then
+				
+				box1 := [vec: vec in differences | (solutions[c]*vec) eq 2];
+				box2 := [vec: vec in differences | (solutions[d]*vec) eq 2];
+				box3 := [vec: vec in differences | ((solutions[c]+solutions[d])*vec) eq 2];
+				if #box1 eq 0 or #box2 eq 0 then
+
+
+				
+				return true,"linear";
+				
+				end if;
+				end if;
+			end for;
+		end for;
+		end if;
+	end for;
+
+
+return false,_;
+end function;
+
+
+res:=<>;
+notpolytope:=[];
+maybe:=[];
+noresult:=[];
+wp:=[];
+
+for iy in rat1 do 
+weights:=tt[iy];
+
+success := false;
+T := Cputime();
+deg := &+weights-1;
+K<[cof]>:=FunctionField(Rationals(),1000);
+KK<[va]>:=PolynomialRing(K,1000);
+usevar:=0;
+P<x,y,z,t,w> := PolynomialRing(KK,weights);
+mon := MonomialsOfWeightedDegree(P,deg);
+PP := WeightedProjectiveSpace(Rationals(),weights);
+RR:=Rays(PP);
+mm:=Transpose(Matrix(Rationals(),RR));
+change:=AssociativeArray();
+
+for x in [1..5] do 
+	change[x]:=P.x;
+	addmon:=MonomialsOfWeightedDegree(P,weights[x]); 
+	for y in addmon do 
+		if y ne P.x then usevar+:=1;change[x]+:=KK.usevar*y;end if;
+	end for;
+end for;
+jac:=ZeroMatrix(P,5,5);
+for i,j in [1..5] do 
+	jac[i,j]:=Derivative(change[i],P.j);
+end for;
+mp:=hom<P->P|[change[i]:i in [1..5]]>;
+
+
+generalpol:=0;
+usevarK:=0;
+for i in [1..#mon] do 
+	usevarK+:=1;
+	generalpol+:=K.usevarK*mon[i];
+end for;
+Asp:=AffineSpace(K,usevar);
+AAp:=CoordinateRing(Asp);
+adtmp:=hom<KK->AAp|[AAp.i:i in [1..usevar]] cat [1:i in [usevar+1..1000]]>;
+
+newpol:=mp(generalpol);
+monnewpol:=Monomials(newpol);
+coenewpol:=Coefficients(newpol);
+monold:=Monomials(generalpol);
+coeold:=Coefficients(generalpol);
+exp := deg div weights[1]; 
+if deg mod weights[1] eq 0 then
+tordiv := [exp,0,0,0,0];
+else
+remainder := [j:j in [2 .. 5] | (deg - weights[j]) mod weights[1] eq 0];
+other := remainder[1];
+tordiv := [(deg-weights[other])/weights[1],0,0,0,0];
+tordiv[other] := 1;
+end if;
+	PP := WeightedProjectiveSpace(Rationals(),weights);
+	OD := Divisor(PP,tordiv); //Weil divisor which is section of O(D)
+	Q := RiemannRochPolytope(OD);
+	pointsall := [point: point in Points(Q)];
+	for leaving in [1,2] do 
+		ch:=choose(#pointsall,leaving);
+		for poss in ch do 
+			points:=[pointsall[i]:i in [1..#pointsall]|not i in poss];
+			
+			tf,type:=checkwp(iy,points,weights,deg);
+
+			if tf then
+				//solutions := [point: point in Points(SolutionSpace) | point ne (Ambient(SolutionSpace) ! [0,0,0,0])];
+				dropvec:=[Vector((pointsall[jj]))*mm+Vector(tordiv):jj in poss];
+				//print poss ;
+				dropmon:=[&*[(P.i)^(Integers()!(Eltseq(dropvec[jj]))[i]):i in [1..5]]:jj in [1..#dropvec]];
+				//dropmon;
+				rell:=[];
+				for tocancel in dropmon do 
+					Append(~rell,coenewpol[Position(monnewpol,tocancel)]);
+				end for;
+				solscheme:=Scheme(Asp,[adtmp(x):x in rell]);solschemenozero:=Scheme(solscheme,adtmp(KK!Coefficients(Determinant(jac))[1]));
+				if Dimension(solscheme) ge 0  then 
+					if  solscheme ne solschemenozero then 
+						
+							<iy,weights,"Rational, number of monomials removed:",leaving, "(W')", Cputime(T)>;
+						
+						Append(~wp,iy);
+						continue iy;
+					end if;
+
+				//if coeold[Position(monold,dropmon)] ne coenewpol[Position(monnewpol,dropmon)] then 
+				//iy;Append(~maybe,<iy,dropmon,weights,deg,mon>); continue iy;
+				//end if;
+
+				end if;
+			end if;
+		end for;
+	end for;
+	Append(~noresult,iy);
+	<iy,"no rationality construction found">;
+	"------------------";
+end for;
