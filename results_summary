@@ -10,7 +10,7 @@ yes:=[601 ,602 ,606 ,613 ,618 ,621 ,623 ,755 ,765 ,832 ,840 ,842 ,884 ,885 ,891 
 //Code Results
 ////////////////
 
-//Summary: 2668 irrational examples, 1627 rational examples, 221 unknown
+//Summary: 2668 irrational examples, 1627 rational examples, 147 unknown
 //(Some more are conditionally irrational on an analysis of X_14 in P(2,3,4,5,7))
 
 //Irrationality:
