@@ -25,7 +25,7 @@ function valid_graph(num, edgeset, roots); // input is number of vertices, set o
     end if;
 end function;
 
-function matrix_potentials(wphs);
+function matrix_potentials(wphs); //wphs must be given in format [d,a_0,...,a_{n+1}]
     deg := wphs[1];
     num_weights := #wphs - 1; // This gives the number of weights (dimension of hypersurf + 2)
     alledges := {}; // This is a set where we'll store edges in the graph corresponding to f
